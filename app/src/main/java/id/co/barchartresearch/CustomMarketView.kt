@@ -18,6 +18,7 @@ class CustomMarketView(context: Context, layoutResources: Int) :
 
     override fun refreshContent(e: Entry?, highlight: Highlight?) {
         tv_chart_marker.text = "DADADA"
+        super.refreshContent(e, highlight)
     }
 
     override fun getOffset(): MPPointF? {

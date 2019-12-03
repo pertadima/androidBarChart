@@ -1,12 +1,9 @@
 package id.co.barchartresearch
 
-import android.graphics.RectF
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.components.XAxis.XAxisPosition
-import com.github.mikephil.charting.components.YAxis.AxisDependency
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
@@ -16,7 +13,6 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.model.GradientColor
-import com.github.mikephil.charting.utils.MPPointF
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -52,9 +48,9 @@ class MainActivity : AppCompatActivity() {
         mutableListOf(GradientColor(startColor, endColor))
     }
 
-    private val onValueSelectedRectF by lazy {
-        RectF()
-    }
+//    private val customMarkerView by lazy {
+//
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +59,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initChart() {
+        val customMarkerView = CustomMarketView(this, R.layout.item_marker_view)
+        customMarkerView.chartView = bar_chart
         with(bar_chart) {
+            marker = customMarkerView
             description.isEnabled = false
             legend.isEnabled = false
             isDoubleTapToZoomEnabled = false
@@ -94,6 +93,8 @@ class MainActivity : AppCompatActivity() {
             axisLeft.apply {
                 isEnabled = false
                 gridColor = transparentWhiteColor
+                axisMinimum = 0F
+                axisMaximum = 100F
             }
 
             val barChartRender = CustomBarChartRender(this, animator, viewPortHandler).apply {
@@ -107,15 +108,10 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onValueSelected(e: Entry?, h: Highlight?) {
-                    if (e == null) return
 
-                    val bounds: RectF = onValueSelectedRectF
-                    bar_chart.getBarBounds(e as BarEntry?, bounds)
-                    val position: MPPointF = bar_chart.getPosition(e, AxisDependency.LEFT)
-
-                    MPPointF.recycleInstance(position)
                 }
             })
+
         }
         setData()
     }
@@ -129,9 +125,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         val barDataSet = BarDataSet(values, "").apply {
-            setDrawIcons(false)
             setDrawValues(false)
             gradientColors = barGradientColor
+            highLightAlpha = 0
         }
 
         val dataSets = mutableListOf(barDataSet)
