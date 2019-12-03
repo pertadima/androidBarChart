@@ -17,7 +17,7 @@ class CustomMarketView(context: Context, layoutResources: Int) :
     MarkerView(context, layoutResources) {
 
     override fun refreshContent(e: Entry?, highlight: Highlight?) {
-        tv_chart_marker.text = "DADADA"
+        tv_chart_marker.text = e?.y.toString()
         super.refreshContent(e, highlight)
     }
 

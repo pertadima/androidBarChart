@@ -7,11 +7,8 @@ import com.github.mikephil.charting.components.XAxis.XAxisPosition
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.model.GradientColor
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -48,9 +45,9 @@ class MainActivity : AppCompatActivity() {
         mutableListOf(GradientColor(startColor, endColor))
     }
 
-//    private val customMarkerView by lazy {
-//
-//    }
+    private val customMarkerView by lazy {
+        CustomMarketView(this, R.layout.item_marker_view)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +56,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initChart() {
-        val customMarkerView = CustomMarketView(this, R.layout.item_marker_view)
         customMarkerView.chartView = bar_chart
         with(bar_chart) {
             marker = customMarkerView
@@ -78,7 +74,7 @@ class MainActivity : AppCompatActivity() {
                 textColor = whiteColor
                 valueFormatter = object : ValueFormatter() {
                     override fun getFormattedValue(value: Float): String {
-                        return listData[0].date
+                        return listData[value.toInt() - 2].date
                     }
                 }
             }
@@ -101,17 +97,6 @@ class MainActivity : AppCompatActivity() {
                 setRadius(50)
             }
             renderer = barChartRender
-
-            setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
-                override fun onNothingSelected() {
-
-                }
-
-                override fun onValueSelected(e: Entry?, h: Highlight?) {
-
-                }
-            })
-
         }
         setData()
     }
