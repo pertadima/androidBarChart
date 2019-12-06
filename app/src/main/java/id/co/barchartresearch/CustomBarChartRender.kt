@@ -17,8 +17,8 @@ class CustomBarChartRender(
     chart: BarDataProvider?,
     animator: ChartAnimator?,
     viewPortHandler: ViewPortHandler?
-) :
-    BarChartRenderer(chart, animator, viewPortHandler) {
+) : BarChartRenderer(chart, animator, viewPortHandler) {
+
     private val barShadowRectBuffer = RectF()
     private var barRadius = 0
 
@@ -26,7 +26,10 @@ class CustomBarChartRender(
         this.barRadius = mRadius
     }
 
-    //SOME HUNGARIAN NOTATION COME FROM LIBRARY
+    /**
+     * SOME HUNGARIAN NOTATION COME FROM LIBRARY (BAR CHART RENDERER)
+     */
+
     override fun drawDataSet(canvas: Canvas, dataSet: IBarDataSet, index: Int) {
         val trans = mChart.getTransformer(dataSet.axisDependency)
 
@@ -44,7 +47,7 @@ class CustomBarChartRender(
             mShadowPaint.color = dataSet.barShadowColor
             val barData = mChart.barData
             val barWidth = barData.barWidth
-            val barWidthHalf = barWidth / 2.0f
+            val barWidthHalf = barWidth / HALF_SIZE
             var x: Float
             var i = 0
             val count =
@@ -137,12 +140,10 @@ class CustomBarChartRender(
             with(barBuffer) {
                 val path2: Path = roundRect(
                     RectF(buffer[j], buffer[j + 1], buffer[j + 2], buffer[j + 3]),
-                    barRadius.toFloat(),
-                    barRadius.toFloat(),
-                    tl = true,
-                    tr = true,
-                    br = false,
-                    bl = false
+                    isRoundedTopLeft = true,
+                    isRoundedTopRight = true,
+                    isRoundedBottomRight = false,
+                    isRoundedBottomLeft = false
                 )
                 canvas.drawPath(path2, mRenderPaint)
             }
@@ -151,12 +152,10 @@ class CustomBarChartRender(
                 with(barBuffer) {
                     val path: Path = roundRect(
                         RectF(buffer[j], buffer[j + 1], buffer[j + 2], buffer[j + 3]),
-                        barRadius.toFloat(),
-                        barRadius.toFloat(),
-                        tl = true,
-                        tr = true,
-                        br = false,
-                        bl = false
+                        isRoundedTopLeft = true,
+                        isRoundedTopRight = true,
+                        isRoundedBottomRight = false,
+                        isRoundedBottomLeft = false
                     )
                     canvas.drawPath(path, mBarBorderPaint)
                 }
@@ -167,15 +166,13 @@ class CustomBarChartRender(
 
     private fun roundRect(
         rect: RectF,
-        rx: Float,
-        ry: Float,
-        tl: Boolean,
-        tr: Boolean,
-        br: Boolean,
-        bl: Boolean
+        isRoundedTopLeft: Boolean,
+        isRoundedTopRight: Boolean,
+        isRoundedBottomRight: Boolean,
+        isRoundedBottomLeft: Boolean
     ): Path {
-        var rx = rx
-        var ry = ry
+        var rx = barRadius.toFloat()
+        var ry = barRadius.toFloat()
         val top = rect.top
         val left = rect.left
         val right = rect.right
@@ -196,28 +193,28 @@ class CustomBarChartRender(
         return Path().apply {
             moveTo(right, top + ry)
 
-            if (tr) rQuadTo(DEFAULT_VALUE, -ry, -rx, -ry) //top-right corner
+            if (isRoundedTopRight) rQuadTo(DEFAULT_VALUE, -ry, -rx, -ry) //top-right corner
             else {
                 rLineTo(DEFAULT_VALUE, -ry)
                 rLineTo(-rx, DEFAULT_VALUE)
             }
             rLineTo(-widthMinusCorners, DEFAULT_VALUE)
 
-            if (tl) rQuadTo(-rx, DEFAULT_VALUE, -rx, ry) //top-left corner
+            if (isRoundedTopLeft) rQuadTo(-rx, DEFAULT_VALUE, -rx, ry) //top-left corner
             else {
                 rLineTo(-rx, DEFAULT_VALUE)
                 rLineTo(DEFAULT_VALUE, ry)
             }
             rLineTo(DEFAULT_VALUE, heightMinusCorners)
 
-            if (bl) rQuadTo(DEFAULT_VALUE, ry, rx, ry) //bottom-left corner
+            if (isRoundedBottomLeft) rQuadTo(DEFAULT_VALUE, ry, rx, ry) //bottom-left corner
             else {
                 rLineTo(DEFAULT_VALUE, ry)
                 rLineTo(rx, DEFAULT_VALUE)
             }
             rLineTo(widthMinusCorners, DEFAULT_VALUE)
 
-            if (br) rQuadTo(rx, DEFAULT_VALUE, rx, -ry) //bottom-right corner
+            if (isRoundedBottomRight) rQuadTo(rx, DEFAULT_VALUE, rx, -ry) //bottom-right corner
             else {
                 rLineTo(rx, DEFAULT_VALUE)
                 rLineTo(0F, -ry)
@@ -230,5 +227,6 @@ class CustomBarChartRender(
 
     companion object {
         private const val DEFAULT_VALUE = 0F
+        private const val HALF_SIZE = 0F
     }
 }

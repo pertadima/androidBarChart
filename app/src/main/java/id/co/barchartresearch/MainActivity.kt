@@ -11,20 +11,53 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
 import com.github.mikephil.charting.model.GradientColor
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private const val START_RANDOM = 0
+        private const val END_RANDOM = 100
+    }
+
     private val listData by lazy {
         mutableListOf(
-            ChartData("1/9", 60.5F),
-            ChartData("2/9", 72.5F),
-            ChartData("3/9", 80.75F),
-            ChartData("4/9", 67.2F),
-            ChartData("5/9", 88.5F),
-            ChartData("6/9", 85.3F),
-            ChartData("7/9", 70.5F)
+            ChartData("1/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("2/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("3/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("4/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("5/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("6/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("7/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat())
         )
     }
+
+    private val newData by lazy {
+        mutableListOf(
+            ChartData("1/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("2/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("3/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("4/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("5/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("6/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("7/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("8/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("9/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("10/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("4/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("5/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("6/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("7/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("1/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("2/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("3/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("4/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("5/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("6/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat()),
+            ChartData("7/9", Random.nextInt(START_RANDOM, END_RANDOM).toFloat())
+        )
+    }
+
 
     private val startColor by lazy {
         ContextCompat.getColor(this, android.R.color.holo_orange_dark)
@@ -53,6 +86,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initChart()
+        btn_update.setOnClickListener {
+            setData(newData)
+        }
     }
 
     private fun initChart() {
@@ -66,15 +102,42 @@ class MainActivity : AppCompatActivity() {
             setPinchZoom(false)
             setDrawBarShadow(false)
             setDrawValueAboveBar(false)
-            animateY(1500)
 
+            val barChartRender = CustomBarChartRender(this, animator, viewPortHandler).apply {
+                setRadius(50)
+            }
+            renderer = barChartRender
+        }
+        setData(listData)
+    }
+
+    private fun setData(barData: List<ChartData>) {
+        val values = mutableListOf<BarEntry>()
+        barData.forEachIndexed { index, chartData ->
+            values.add(BarEntry(index.toFloat(), chartData.value))
+        }
+
+        val barDataSet = BarDataSet(values, "").apply {
+            setDrawValues(false)
+            gradientColors = barGradientColor
+            highLightAlpha = 0
+        }
+
+        val dataSets = mutableListOf(barDataSet)
+        val data = BarData(dataSets as List<IBarDataSet>?).apply {
+            setValueTextSize(10F)
+            barWidth = 0.6F
+        }
+
+        with(bar_chart) {
+            animateY(1500)
             xAxis.apply {
                 position = XAxisPosition.BOTTOM
                 setDrawGridLines(false)
                 textColor = whiteColor
                 valueFormatter = object : ValueFormatter() {
                     override fun getFormattedValue(value: Float): String {
-                        return listData[value.toInt() - 2].date
+                        return barData[value.toInt()].date
                     }
                 }
             }
@@ -93,34 +156,9 @@ class MainActivity : AppCompatActivity() {
                 axisMaximum = 100F
             }
 
-            val barChartRender = CustomBarChartRender(this, animator, viewPortHandler).apply {
-                setRadius(50)
-            }
-            renderer = barChartRender
+            notifyDataSetChanged()
+            this.data = data
+            invalidate()
         }
-        setData()
-    }
-
-    private fun setData() {
-        val values = mutableListOf<BarEntry>()
-        var index = 1
-        listData.forEach {
-            index++
-            values.add(BarEntry(index.toFloat(), it.value))
-        }
-
-        val barDataSet = BarDataSet(values, "").apply {
-            setDrawValues(false)
-            gradientColors = barGradientColor
-            highLightAlpha = 0
-        }
-
-        val dataSets = mutableListOf(barDataSet)
-        val data = BarData(dataSets as List<IBarDataSet>?).apply {
-            setValueTextSize(10F)
-            barWidth = 0.6F
-        }
-
-        bar_chart.data = data
     }
 }
